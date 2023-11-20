@@ -63,6 +63,9 @@ export default class Chatroom {
 
     broadcast(messageObj: object) {
         for (const client of this.clientData.values()) {
+            if (client.name == null) {
+                continue;
+            }
             client.send(messageObj)
                 .catch((_e) => {
                     console.error(
