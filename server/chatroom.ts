@@ -1,17 +1,14 @@
 // @deno-types="ws-types"
 import { WebSocket, WebSocketServer } from "ws";
+import { Server } from "node:https";
 import Chatter from "./chatter.ts";
 
 export interface ChatroomSettings {
     password?: string;
     heartbeat: number;
     maxMsgLen: number;
+    server: Server;
 }
-
-const defaultSettings: ChatroomSettings = {
-    maxMsgLen: 500,
-    heartbeat: 10 * 1000,
-};
 
 export default class Chatroom {
     private server: WebSocketServer;
@@ -20,10 +17,10 @@ export default class Chatroom {
     private settings: ChatroomSettings;
     private intervalId: number | null = null;
 
-    constructor(settings: ChatroomSettings = defaultSettings) {
+    constructor(settings: ChatroomSettings) {
         this.server = new WebSocketServer({
             path: "/chatroom",
-            port: 8080,
+            server: settings.server,
         });
         this.clientData = new Map();
         this.usernames = new Set<string>();

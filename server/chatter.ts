@@ -27,7 +27,7 @@ export default class Chatter {
     init() {
         this.socket.on("message", (msg) => {
             try {
-                const msgObj = JSON.parse(msg);
+                const msgObj = JSON.parse(msg.toString());
                 this.onMessage(msgObj);
             } catch (e) {
                 if (e instanceof Error) {
@@ -97,7 +97,7 @@ export default class Chatter {
         }
     }
 
-    private onLogin(msg: LoginMessage) {
+    private async onLogin(msg: LoginMessage) {
         if (this.signedIn) {
             this.sendError("Already signed in");
             return;
@@ -107,14 +107,14 @@ export default class Chatter {
             return;
         }
         if (this.chatroom.verifyLogin(msg.password)) {
+            await this.confirm("LOGIN");
             this.signedIn = true;
-            this.confirm("LOGIN");
         } else {
             this.sendError("Invalid login");
         }
     }
 
-    private onUsername(msg: UsernameMessage) {
+    private async onUsername(msg: UsernameMessage) {
         if (!this.signedIn) {
             this.sendError("Not signed in");
             return;
@@ -127,8 +127,8 @@ export default class Chatter {
             this.sendError("Invalid or taken username");
             return;
         }
+        await this.confirm("USERNAME");
         this.nickname = msg.username;
-        this.confirm("USERNAME");
     }
 
     private onError(err: Error) {

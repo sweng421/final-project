@@ -1,7 +1,8 @@
 {
     "tasks": {
         "start": "deno run --unstable --allow-read --allow-net --allow-env main.ts",
-        "dev": "deno run --watch main.ts"
+        "dev": "deno run --watch main.ts",
+        "localcert": "mkdir certificate; cd certificate && mkcert -key-file key.pem -cert-file cert.pem localhost 0.0.0.0 127.0.0.1 && mkcert -install"
     },
     "imports": {
         "express": "npm:express@4.18.2",
