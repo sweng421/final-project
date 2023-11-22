@@ -1,11 +1,26 @@
 import { readFileSync } from "node:fs";
 import { createServer } from "node:https";
-import { ServerResponse, IncomingMessage } from "node:http";
+import { IncomingMessage, ServerResponse } from "node:http";
+import { config } from "dotenv";
 
 import Chatroom from "./chatroom.ts";
 
-const key = readFileSync("./certificate/key.pem", "utf8");
-const cert = readFileSync("./certificate/cert.pem", "utf8");
+config();
+
+const keyPath = Deno.env.get("KEY_PATH");
+const certPath = Deno.env.get("CERT_PATH");
+const chatPath = Deno.env.get("CHAT_PATH") ?? "/chatroom";
+const maxMsgLen = parseInt(Deno.env.get("MAX_MSG_LEN") ?? "500");
+const maxUsrLen = parseInt(Deno.env.get("MAX_USR_LEN") ?? "10");
+const heartbeat = parseInt(Deno.env.get("HEARTBEAT_DURATION") ?? "10000");
+
+if (!keyPath || !certPath) {
+    console.error("No SSL certificate specified");
+    Deno.exit(1);
+}
+
+const key = readFileSync(keyPath, "utf8");
+const cert = readFileSync(certPath, "utf8");
 
 function handleRequest(_: IncomingMessage, res: ServerResponse) {
     res.writeHead(200);
@@ -14,10 +29,12 @@ function handleRequest(_: IncomingMessage, res: ServerResponse) {
 
 const server = createServer({ cert, key }, handleRequest);
 const chatroom = new Chatroom({
-    maxMsgLen: 500,
-    password: "test",
-    heartbeat: 10 * 1000,
+    maxMsgLen,
+    maxUsrLen,
+    heartbeat,
+    chatPath,
     server,
+    password: Deno.env.get("PWD_HASH"),
 });
 chatroom.init();
 server.listen(3000);

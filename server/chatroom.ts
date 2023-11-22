@@ -7,6 +7,8 @@ export interface ChatroomSettings {
     password?: string;
     heartbeat: number;
     maxMsgLen: number;
+    maxUsrLen: number;
+    chatPath: string;
     server: Server;
 }
 
@@ -14,12 +16,12 @@ export default class Chatroom {
     private server: WebSocketServer;
     private clientData: Map<WebSocket, Chatter>;
     private usernames: Set<string>;
-    private settings: ChatroomSettings;
+    readonly settings: ChatroomSettings;
     private intervalId: number | null = null;
 
     constructor(settings: ChatroomSettings) {
         this.server = new WebSocketServer({
-            path: "/chatroom",
+            path: settings.chatPath,
             server: settings.server,
         });
         this.clientData = new Map();
@@ -42,7 +44,7 @@ export default class Chatroom {
 
     tryClaimUsername(s: string): boolean {
         if (
-            s.length < this.settings.maxMsgLen && /^\w+$/.test(s) &&
+            s.length <= this.settings.maxUsrLen && /^\w+$/.test(s) &&
             !this.usernames.has(s)
         ) {
             this.usernames.add(s);

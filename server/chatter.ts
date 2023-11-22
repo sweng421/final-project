@@ -86,7 +86,10 @@ export default class Chatter {
     }
 
     private onPost(msg: PostMessage) {
-        if (this.nickname && this.signedIn) {
+        if (
+            this.nickname && this.signedIn &&
+            msg.message.length <= this.chatroom.settings.maxMsgLen
+        ) {
             this.chatroom.broadcast({
                 kind: "message",
                 author: this.nickname,
