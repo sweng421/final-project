@@ -1,6 +1,7 @@
+// @deno-types="express-types"
+import express from "express";
 import { readFileSync } from "node:fs";
 import { createServer } from "node:https";
-import { IncomingMessage, ServerResponse } from "node:http";
 import { config } from "dotenv";
 
 import Chatroom from "./chatroom.ts";
@@ -13,6 +14,7 @@ const chatPath = Deno.env.get("CHAT_PATH") ?? "/chatroom";
 const maxMsgLen = parseInt(Deno.env.get("MAX_MSG_LEN") ?? "500");
 const maxUsrLen = parseInt(Deno.env.get("MAX_USR_LEN") ?? "10");
 const heartbeat = parseInt(Deno.env.get("HEARTBEAT_DURATION") ?? "10000");
+const password = Deno.env.get("PWD_HASH");
 
 if (!keyPath || !certPath) {
     console.error("No SSL certificate specified");
@@ -22,19 +24,27 @@ if (!keyPath || !certPath) {
 const key = readFileSync(keyPath, "utf8");
 const cert = readFileSync(certPath, "utf8");
 
-function handleRequest(_: IncomingMessage, res: ServerResponse) {
-    res.writeHead(200);
-    res.end("Test message");
-}
+const router = express()
+    .get("/", function(_req, res) {
+        res.status(200).send("Chatroom server");
+    })
+    .get("/settings", function(_req, res) {
+        res.status(200).json({
+            chatPath,
+            maxMsgLen,
+            maxUsrLen,
+            requiresPassword: !!password,
+        });
+    });
 
-const server = createServer({ cert, key }, handleRequest);
+const server = createServer({ cert, key }, router);
 const chatroom = new Chatroom({
     maxMsgLen,
     maxUsrLen,
     heartbeat,
     chatPath,
     server,
-    password: Deno.env.get("PWD_HASH"),
+    password,
 });
 chatroom.init();
 server.listen(3000);
