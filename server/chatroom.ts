@@ -2,6 +2,7 @@
 import { WebSocket, WebSocketServer } from "ws";
 import { Server } from "node:https";
 import Chatter from "./chatter.ts";
+import * as bcrypt from "bcrypt";
 
 export interface ChatroomSettings {
     password?: string;
@@ -53,11 +54,12 @@ export default class Chatroom {
         return false;
     }
 
-    verifyLogin(password: string): boolean {
+    async verifyLogin(password: string): Promise<boolean> {
         if (!this.settings.password) {
             return false;
         }
-        return this.settings.password === password;
+
+        return await bcrypt.compare(password, this.settings.password);
     }
 
     broadcast(messageObj: object) {

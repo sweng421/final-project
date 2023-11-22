@@ -109,7 +109,7 @@ export default class Chatter {
             this.sendError("No password provided");
             return;
         }
-        if (this.chatroom.verifyLogin(msg.password)) {
+        if (await this.chatroom.verifyLogin(msg.password)) {
             await this.confirm("LOGIN");
             this.signedIn = true;
         } else {
