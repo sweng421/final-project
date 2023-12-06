@@ -94,6 +94,7 @@ export default class Chatter {
                 kind: "message",
                 author: this.nickname,
                 message: (msg.message + "").trim(),
+                timestamp: Date.now(),
             });
         } else {
             this.sendError("Couldn't send message");
