@@ -1,13 +1,16 @@
 package xyz.whisperchat.client;
 
-import java.util.List;
+import javax.swing.UIManager;
+import xyz.whisperchat.client.ui.LoginFrame;
 
 public class Application {
     public static void main(String[] args) throws Exception {
-        ChatPluginLoader loader = new ChatPluginLoader();
-        List<StylometricAnonymizer> extensions = loader.loadChatPlugin("C:\\Users\\elmcd\\Downloads\\llamacpu-plugin-0.1-all.jar");
-        for (StylometricAnonymizer ext : extensions) {
-            System.out.println(ext.anonymize("Test message"));
+        try { 
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        LoginFrame f = new LoginFrame();
+        f.setVisible(true);
     }
 }
