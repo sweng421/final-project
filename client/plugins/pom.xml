@@ -82,6 +82,6 @@
   </dependencies>
 
   <modules>
-    <module>llamacpu</module>
+    <module>llamafier</module>
   </modules>  
 </project>
