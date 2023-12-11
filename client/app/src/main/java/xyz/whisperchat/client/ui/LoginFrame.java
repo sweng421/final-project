@@ -91,7 +91,7 @@ public class LoginFrame extends StatefulFrame implements ActionListener {
                 .setUsername(usernameField.getText())
                 .connect()
                 .get(); // todo make async?
-            ChatroomFrame f = new ChatroomFrame(this, conn);
+            ChatroomFrame f = new ChatroomFrame(this, conn, usernameField.getName());
             setVisible(false);
             f.setVisible(true);
         } catch (Exception ex) {
