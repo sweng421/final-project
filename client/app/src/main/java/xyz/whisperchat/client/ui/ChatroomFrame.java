@@ -3,12 +3,13 @@ package xyz.whisperchat.client.ui;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ServiceLoader;
-import org.pf4j.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import xyz.whisperchat.client.connection.ChatroomConnection;
+import xyz.whisperchat.client.plugin.ChatPluginLoader;
+import xyz.whisperchat.client.plugin.StylometricAnonymizer;
+import xyz.whisperchat.client.plugin.UtilImpl;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -29,7 +30,9 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         loadPlugin = new JButton("Load Plugin"),
         filter = new JButton("Filter"),
         anon = new JButton("Anonymize");
-    JCheckBox alertListener = new JCheckBox();
+    private JCheckBox alertListener = new JCheckBox();
+    private StylometricAnonymizer plugin = null;
+    private ExecutorService pluginExecutor = null;
 
     public ChatroomFrame(LoginFrame back, ChatroomConnection conn) {
         super("Chatroom at " + conn.getHost());
@@ -38,6 +41,56 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         connection = conn;
         connection.addListener(messages);
         initializeComponents();
+    }
+
+    // Runs a plugin action in a seperate thread
+    private void runPluginAction(Runnable task) {
+        if (pluginExecutor == null) {
+            pluginExecutor = Executors.newSingleThreadExecutor();
+        }
+        pluginExecutor.submit(task);
+    }
+
+    // Display and hide plugin UI
+    private void showPluginArea() {
+        if (plugin != null) {
+            anonPane.setVisible(true);
+            anonMsgInput.setVisible(true);
+            anon.setVisible(true);
+        }
+    }
+    private void hidePluginArea() {
+        anonPane.setVisible(false);
+        anonMsgInput.setVisible(false);
+        anon.setVisible(false);
+    }
+
+    // Protects UI state while plugin is loading
+    private void lockPluginLoader() {
+        hidePluginArea();
+        loadPlugin.setEnabled(false);
+        loadPlugin.setText("Loading...");
+    }
+    private void unlockPluginLoader() {
+        showPluginArea();
+        loadPlugin.setEnabled(true);
+        loadPlugin.setText("Load Plugin");
+    }
+
+    // Startup and shutdown functions to guard UI while
+    // plugin anonymizes text
+    private void startAnonProcess() {
+        loadPlugin.setEnabled(false);
+        anon.setText("Anonymizing...");
+        anon.setEnabled(false);
+        anonMsgInput.setEnabled(false);
+        
+    }
+    private void closeAnonProcess() {
+        loadPlugin.setEnabled(true);
+        anon.setText("Anonymize");
+        anon.setEnabled(true);
+        anonMsgInput.setEnabled(true);
     }
 
     private void initializeComponents() {
@@ -95,6 +148,7 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         msgInputField.setLineWrap(true);
         pluginType.setEnabled(false);
         pluginType.setVisible(false);
+        pluginType.setLineWrap(true);
 
         fixFont(anonMsgInput);
         fixFont(msgInputField);
@@ -113,6 +167,7 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         backButton.addActionListener(this);
         loadPlugin.addActionListener(this);
         sendMsg.addActionListener(this);
+        anon.addActionListener(this);
 
         msgInputField.setFocusable(true);
         
@@ -124,71 +179,122 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
     }
 
     @Override
+    public void dispose() {
+        super.dispose();
+        connection.close();
+        if (pluginExecutor != null) {
+            pluginExecutor.shutdownNow();
+        }
+        killPlugin();
+    }
+
+    @Override
     public StatefulFrame trySwitchState() {
         setVisible(false);
-        connection.close();
         backFrame.setVisible(true);
         this.dispose();
         return backFrame;
     }
 
     private void sendAction() {
-        connection.sendMessage(msgInputField.getText());
+        String msg = msgInputField.getText().trim();
+        if (msg.length() > 0 && msg.length() <= connection.getSettings().getMaxMsgLen()) {
+            connection.sendMessage(msg);
+            msgInputField.setText("");
+        }
+    }
+
+    private void showErrorDialog(String msg) {
+        JOptionPane.showMessageDialog(this, msg, "Chatroom error", JOptionPane.ERROR_MESSAGE);
     }
 
     private void loadPluginAction() {
-        String pluginName;
-        File plugin;
+        JFileChooser ofd = new JFileChooser();
+        ofd.setFileFilter(new FileNameExtensionFilter("JAR Files", "jar"));
 
-        JFileChooser jFileChooser = new JFileChooser();
-        jFileChooser.setFileFilter(new FileNameExtensionFilter("JAR Files", "jar"));
-        int returnVal = jFileChooser.showDialog(loadPlugin, "Ok");
-
-        if(returnVal == 0) {
-            plugin = jFileChooser.getSelectedFile();
+        if(ofd.showDialog(loadPlugin, "Load plugin") == JFileChooser.APPROVE_OPTION) {
+            // Get file dialog data
+            File pluginFile = ofd.getSelectedFile();
+            final String fileName = pluginFile.getName();
             try {
-                URL jarUrl = new URL("file://" + plugin.getPath());
-                URLClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl});
-                ServiceLoader<Plugin> serviceLoader = ServiceLoader.load(Plugin.class, classLoader);
+                // Load plugin from jar
+                ChatPluginLoader loader = new ChatPluginLoader();
+                final StylometricAnonymizer plugin = loader.loadChatPlugin(pluginFile);
 
-                for (Plugin p : serviceLoader) {
-                    p.start();
-                }
-                // Close the class loader
-                classLoader.close();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
+                // Init util object
+                final UtilImpl util = new UtilImpl(connection.getSettings().getMaxMsgLen());
+                util.setParent(this);
+
+                // Attempt to run setup function
+                runPluginAction(() -> {
+                    lockPluginLoader();
+                    try {
+                        plugin.setup(util);
+                        setPlugin(plugin, fileName);
+                    } catch (Exception ex) {
+                        showErrorDialog("Could not set up plugin from " + fileName);
+                        ex.printStackTrace(System.err);
+                    } finally {
+                        unlockPluginLoader();
+                    }
+                });
+            } catch (Exception ex) {
+                showErrorDialog("Could not load plugin from " + fileName);
+                ex.printStackTrace(System.err);
             }
+        }
+    }
 
-            //Display the plugin loaded
-            pluginName = plugin.getName();
-            pluginType.setLineWrap(true);
-            pluginType.setText("Plugin type:\n" + pluginName);
-            pluginType.setEnabled(false);
+    private void killPlugin() {
+        if (plugin != null) {
+            try {
+                plugin.close();
+            } catch (Exception ex) {
+                ex.printStackTrace(System.err);
+            }
+            plugin = null;
+        }
+    }
+
+    private void setPlugin(StylometricAnonymizer p, String name) {
+        // Unload current plugin
+        killPlugin();
+
+        // Add new plugin (assumed to be already be setup)
+        plugin = p;
+        if (plugin == null) {
+            // Hide plugin areas
+            pluginType.setVisible(false);
+            hidePluginArea();
+        } else {
+            // Display the plugin loaded
+            pluginType.setText("Plugin loaded:\n" + name);
             pluginType.setVisible(true);
 
-            //Display the anonymizer button and text area
-            anonPane.setVisible(true);
-            anonMsgInput.setVisible(true);
-            anon.setVisible(true);
-            anon.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent e)
-                {   /*****
-                    To Do
-                    *****/
-                }
-            });
+            // Display the anonymizer button and text area
+           showPluginArea();
         }
     }
 
     private void filterAction() {
-
+        // @TODO
     }
 
     private void anonAction() {
-
+        String anonText = anonMsgInput.getText().trim();
+        if (plugin != null && anonText.length() > 0) {
+            runPluginAction(() -> {
+                startAnonProcess();
+                try {
+                    msgInputField.setText(plugin.anonymize(anonText));
+                } catch (Exception ex) {
+                    showErrorDialog("Anonymizer plugin failed");
+                    ex.printStackTrace(System.err);
+                } finally {
+                    closeAnonProcess();
+                }
+            });
+        }
     }
 
     @Override
