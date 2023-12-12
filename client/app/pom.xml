@@ -14,7 +14,7 @@
     <name>App</name>
 
     <properties>
-        <main.class>xyz.whisperchat.client.Boot</main.class>
+        <main.class>xyz.whisperchat.client.Application</main.class>
     </properties>
 
     <build>
