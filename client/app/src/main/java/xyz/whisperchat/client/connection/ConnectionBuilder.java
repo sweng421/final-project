@@ -67,8 +67,8 @@ public class ConnectionBuilder {
     public CompletableFuture<ChatroomConnection> connect() throws URISyntaxException, InterruptedException {
         URI wsUri = new URI("wss", host,
             settings.getChatPath(), null, null);
-        ChatroomConnection connection = new ChatroomConnection(wsUri, settings);
-        CompletableFuture<ChatroomConnection> f = new CompletableFuture<>();
+        final ChatroomConnection connection = new ChatroomConnection(wsUri, settings);
+        final CompletableFuture<ChatroomConnection> f = new CompletableFuture<>();
 
         ConnectionListener listener = new ConnectionListener() {
             @Override
