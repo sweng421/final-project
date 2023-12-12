@@ -9,31 +9,26 @@ import java.net.URLClassLoader;
 import java.util.ServiceLoader;
 import org.pf4j.*;
 import xyz.whisperchat.client.connection.ChatroomConnection;
-import xyz.whisperchat.client.connection.MessageListener;
-import xyz.whisperchat.client.connection.messages.server.PostMessage;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class ChatroomFrame extends StatefulFrame implements MessageListener,
-        ActionListener
-{
-    int changeEventHandler = 0;    //Check this value before playing incoming alert beep to ensure
-    //change events were not made locally
+public class ChatroomFrame extends StatefulFrame implements ActionListener {
     private final ChatroomConnection connection;
     private LoginFrame backFrame;
-    private JTextArea msgInputField = new JTextArea();
-    private JTextArea pluginType = new JTextArea();
+    private JTextArea msgInputField = new JTextArea(),
+        pluginType = new JTextArea(),
+        anonMsgInput = new JTextArea();
+    private JScrollPane anonPane = new JScrollPane(anonMsgInput),
+        msgPane = new JScrollPane(msgInputField);
     private MessageView messages = new MessageView();
-    //private JTextArea populatedMessages = new JTextArea(); //Message view
-    private JTextArea anonMsgInput = new JTextArea();     //Anonymizer text input
-    private JButton sendMsg = new JButton("Send");
-    private JButton backButton = new JButton("Logout");
-    private JButton loadPlugin = new JButton("Load Plugin");
-    private JButton filter = new JButton("Filter");
-    private JButton anon = new JButton("Anonymize");
+    private JButton sendMsg = new JButton("Send"),
+        backButton = new JButton("Logout"),
+        loadPlugin = new JButton("Load Plugin"),
+        filter = new JButton("Filter"),
+        anon = new JButton("Anonymize");
     JCheckBox alertListener = new JCheckBox();
 
     public ChatroomFrame(LoginFrame back, ChatroomConnection conn) {
@@ -41,22 +36,16 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener,
         state = LOGGED_IN;
         backFrame = back;
         connection = conn;
-        connection.addListener(this);
         connection.addListener(messages);
         initializeComponents();
     }
 
     private void initializeComponents() {
-        connection.sendMessage("Success!");
-
         this.setVisible(true);
         this.setSize(new Dimension(600, 600));
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
-        JScrollPane scrollPane = messages;
-        JScrollPane scrollPane2 = new JScrollPane(anonMsgInput);
-        JScrollPane scrollPane3 = new JScrollPane(msgInputField);
         alertListener.setToolTipText("Subscribe to incoming message alerts");
 
         GroupLayout panelLayout = new GroupLayout(panel);
@@ -67,9 +56,9 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener,
         panelLayout.setHorizontalGroup(
                 panelLayout.createSequentialGroup()
                         .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, true)
-                                .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-                                .addComponent(scrollPane2, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-                                .addComponent(scrollPane3, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE))
+                                .addComponent(messages, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+                                .addComponent(anonPane, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+                                .addComponent(msgPane, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE))
                         .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(alertListener)
                                 .addComponent(backButton)
@@ -83,7 +72,7 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener,
         panelLayout.setVerticalGroup(
                 panelLayout.createSequentialGroup()
                         .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+                                .addComponent(messages, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
                                 .addGroup(panelLayout.createSequentialGroup()
                                         .addComponent(alertListener)
                                         .addComponent(backButton)
@@ -91,15 +80,15 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener,
                                         .addComponent(pluginType, 60, 60, 60)
                                         .addComponent(filter)))
                         .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(scrollPane2, 60, 60, 60)
+                                .addComponent(anonPane, 60, 60, 60)
                                 .addComponent(anon))
                         .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(scrollPane3, 60, 60, 60)
+                                .addComponent(msgPane, 60, 60, 60)
                                 .addComponent(sendMsg))
         );
 
         sendMsg.setAlignmentX(backButton.getAlignmentX());
-        scrollPane2.setVisible(false);
+        anonPane.setVisible(false);
         anon.setVisible(false);
         anonMsgInput.setVisible(false);
         anonMsgInput.setLineWrap(true);
@@ -110,157 +99,27 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener,
         fixFont(anonMsgInput);
         fixFont(msgInputField);
 
-        alertListener.addChangeListener(new ChangeListener()
-        {
+        alertListener.addChangeListener(new ChangeListener() {
             @Override
-            public void stateChanged(ChangeEvent e)
-            {
-                if(alertListener.isSelected())
-                {
+            public void stateChanged(ChangeEvent e) {
+                if (alertListener.isSelected()) {
                     alertListener.setToolTipText("Unsubscribe from incoming message alerts");
-                }
-                else {
+                } else {
                     alertListener.setToolTipText("Subscribe to incoming message alerts");
                 }
-                /*populatedMessages.getDocument().addDocumentListener(new DocumentListener()
-                {
-                    @Override
-                    public void insertUpdate(DocumentEvent e)
-                    {
-                        if(changeEventHandler != 1)
-                        {
-                            Toolkit.getDefaultToolkit().beep();
-                        }
-                    }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent e)
-                    {
-                        if(changeEventHandler != 1)
-                            Toolkit.getDefaultToolkit().beep();
-                    }
-
-                    @Override
-                    public void changedUpdate(DocumentEvent e)
-                    {
-                        if(changeEventHandler != 1)
-                            Toolkit.getDefaultToolkit().beep();
-                    }
-                });*/
-
             }
         });
 
         backButton.addActionListener(this);
-        loadPlugin.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                changeEventHandler = 1;
-                String pluginName;
-                File plugin;
-
-                JFileChooser jFileChooser = new JFileChooser();
-
-                jFileChooser.setFileFilter(new FileNameExtensionFilter("JAR Files", "jar"));
-                int returnVal = jFileChooser.showDialog(loadPlugin, "Ok");
-
-                if(returnVal == 0)
-                {
-                    plugin = jFileChooser.getSelectedFile();
-                    try
-                    {
-                        URL jarUrl = new URL("file://" + plugin.getPath());
-                        URLClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl});
-                        ServiceLoader<Plugin> serviceLoader = ServiceLoader.load(Plugin.class, classLoader);
-
-                        for (Plugin p : serviceLoader) {
-                            p.start();
-                        }
-                        // Close the class loader
-                        classLoader.close();
-                    }
-                    catch (IOException ex)
-                    {
-                        throw new RuntimeException(ex);
-                    }
-
-                    //Display the plugin loaded
-                    pluginName = plugin.getName();
-                    pluginType.setLineWrap(true);
-                    pluginType.setText("Plugin type:\n" + pluginName);
-                    pluginType.setEnabled(false);
-                    pluginType.setVisible(true);
-
-                    //Display the anonymizer button and text area
-                    scrollPane2.setVisible(true);
-                    anonMsgInput.setVisible(true);
-                    anon.setVisible(true);
-                    anon.addActionListener(new ActionListener()
-                    {
-                        @Override
-                        public void actionPerformed(ActionEvent e)
-                        {   /*****
-                         To Do
-                         *****/
-                        }
-                    });
-                }
-                changeEventHandler = 0;
-            }
-        });
-
-        sendMsg.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println(msgInputField.getText());
-                connection.sendMessage(msgInputField.getText());
-            }
-        });
+        loadPlugin.addActionListener(this);
+        sendMsg.addActionListener(this);
 
         msgInputField.setFocusable(true);
-        /*msgInputField.addKeyListener(new KeyAdapter()
-        {
-            @Override
-            public void keyTyped(KeyEvent e)
-            {
-            }
-            @Override
-            public void keyReleased(KeyEvent e)
-            {
-                changeEventHandler = 1;
-                if (e.getKeyCode() == KeyEvent.VK_ENTER)
-                {
-                    String msg = msgInputField.getText();
-
-                    if(!msg.equals("") && !msg.equals("\n") && !msg.equals(" "))
-                    {
-                        if(populatedMessages.getText().equals(""))
-                        {
-                            populatedMessages.setText(connection.getUsername() + ":\n" + msg);
-                        }
-                        else
-                        {
-                            populatedMessages.setText(populatedMessages.getText() +
-                                    "\n" + connection.getUsername() + ":\n" + msg);
-                        }
-                    }
-                    msgInputField.setText("");
-                }
-                changeEventHandler = 0;
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e)
-            {
-            }
-        });*/
+        
         add(panel);
         pack();
         setLocationRelativeTo(null);
-        panel.setMinimumSize(getMinimumSize());
-        panel.setMaximumSize(getMaximumSize());
+        panel.setMinimumSize(getSize());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
@@ -273,21 +132,77 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener,
         return backFrame;
     }
 
-    @Override
-    public void onMessage(PostMessage msg) {
-        System.out.println(msg);
+    private void sendAction() {
+        connection.sendMessage(msgInputField.getText());
+    }
+
+    private void loadPluginAction() {
+        String pluginName;
+        File plugin;
+
+        JFileChooser jFileChooser = new JFileChooser();
+        jFileChooser.setFileFilter(new FileNameExtensionFilter("JAR Files", "jar"));
+        int returnVal = jFileChooser.showDialog(loadPlugin, "Ok");
+
+        if(returnVal == 0) {
+            plugin = jFileChooser.getSelectedFile();
+            try {
+                URL jarUrl = new URL("file://" + plugin.getPath());
+                URLClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl});
+                ServiceLoader<Plugin> serviceLoader = ServiceLoader.load(Plugin.class, classLoader);
+
+                for (Plugin p : serviceLoader) {
+                    p.start();
+                }
+                // Close the class loader
+                classLoader.close();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+
+            //Display the plugin loaded
+            pluginName = plugin.getName();
+            pluginType.setLineWrap(true);
+            pluginType.setText("Plugin type:\n" + pluginName);
+            pluginType.setEnabled(false);
+            pluginType.setVisible(true);
+
+            //Display the anonymizer button and text area
+            anonPane.setVisible(true);
+            anonMsgInput.setVisible(true);
+            anon.setVisible(true);
+            anon.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {   /*****
+                    To Do
+                    *****/
+                }
+            });
+        }
+    }
+
+    private void filterAction() {
+
+    }
+
+    private void anonAction() {
+
     }
 
     @Override
-    public void onError(Exception e) {
-        e.printStackTrace();
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e)
-    {
+    public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(backButton)) {
             trySwitchState();
+        } else if (e.getSource().equals(sendMsg)) {
+            sendAction();
+        } else if (e.getSource().equals(loadPlugin)) {
+            loadPluginAction();
+        } else if (e.getSource().equals(filter)) {
+            filterAction();
+        } else if (e.getSource().equals(anon)) {
+             anonAction();
         }
     }
 }
