@@ -59,12 +59,12 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener, UI_
         });
 
         this.setVisible(true);
-        this.setSize(new Dimension(700, 800));
+        this.setSize(new Dimension(600, 600));
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
         JScrollPane scrollPane = new JScrollPane(populatedMessages);
-        final JScrollPane scrollPane2 = new JScrollPane(anonMsgInput);
+        JScrollPane scrollPane2 = new JScrollPane(anonMsgInput);
         JScrollPane scrollPane3 = new JScrollPane(msgInputField);
         alertListener.setToolTipText("Subscribe to incoming message alerts");
 
@@ -72,24 +72,23 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener, UI_
         panel.setLayout(panelLayout);
         panelLayout.setAutoCreateGaps(true);
         panelLayout.setAutoCreateContainerGaps(true);
+
         panelLayout.setHorizontalGroup(
-                panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(panelLayout.createSequentialGroup()
+                panelLayout.createSequentialGroup()
+                        .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, true)
                                 .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-                                .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(alertListener)
-                                        .addComponent(backButton)
-                                        .addComponent(loadPlugin)
-                                        .addComponent(pluginType, 130, 130, 130)
-                                        .addComponent(filter)))
-                        .addGroup(panelLayout.createSequentialGroup()
-                                .addComponent(scrollPane2, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE - 130)
+                                .addComponent(scrollPane2, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+                                .addComponent(scrollPane3, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE))
+                        .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(alertListener)
+                                .addComponent(backButton)
+                                .addComponent(loadPlugin)
+                                .addComponent(pluginType, 130, 130, 130)
+                                .addComponent(filter)
+                                .addComponent(sendMsg)
                                 .addComponent(anon))
-                        .addGroup(panelLayout.createSequentialGroup()
-                                .addComponent(scrollPane3, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE - 130)
-                                .addComponent(sendMsg))
         );
-        System.out.println(filter.getX());
+
         panelLayout.setVerticalGroup(
                 panelLayout.createSequentialGroup()
                         .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -107,6 +106,8 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener, UI_
                                 .addComponent(scrollPane3, 60, 60, 60)
                                 .addComponent(sendMsg))
         );
+
+        sendMsg.setAlignmentX(backButton.getAlignmentX());
         scrollPane2.setVisible(false);
         anon.setVisible(false);
         anonMsgInput.setVisible(false);
@@ -190,32 +191,32 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener, UI_
                         }
                         // Close the class loader
                         classLoader.close();
-
-                        //Display the plugin loaded
-                        pluginName = plugin.getName();
-                        pluginType.setLineWrap(true);
-                        pluginType.setText("Plugin type:\n" + pluginName);
-                        pluginType.setEnabled(false);
-                        pluginType.setVisible(true);
-
-                        //Display the anonymizer button and text area
-                        scrollPane2.setVisible(true);
-                        anonMsgInput.setVisible(true);
-                        anon.setVisible(true);
-                        anon.addActionListener(new ActionListener()
-                        {
-                            @Override
-                            public void actionPerformed(ActionEvent e)
-                            {   /*****
-                             To Do
-                             *****/
-                            }
-                        });
                     }
                     catch (IOException ex)
                     {
                         throw new RuntimeException(ex);
                     }
+
+                    //Display the plugin loaded
+                    pluginName = plugin.getName();
+                    pluginType.setLineWrap(true);
+                    pluginType.setText("Plugin type:\n" + pluginName);
+                    pluginType.setEnabled(false);
+                    pluginType.setVisible(true);
+
+                    //Display the anonymizer button and text area
+                    scrollPane2.setVisible(true);
+                    anonMsgInput.setVisible(true);
+                    anon.setVisible(true);
+                    anon.addActionListener(new ActionListener()
+                    {
+                        @Override
+                        public void actionPerformed(ActionEvent e)
+                        {   /*****
+                         To Do
+                         *****/
+                        }
+                    });
                 }
                 changeEventHandler = 0;
             }
@@ -281,6 +282,7 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener, UI_
         pack();
         setLocationRelativeTo(null);
         panel.setMinimumSize(getMinimumSize());
+        panel.setMaximumSize(getMaximumSize());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
@@ -289,7 +291,7 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener, UI_
         setVisible(false);
         connection.close();
         backFrame.setVisible(true);
-        dispose();
+        this.dispose();
         return backFrame;
     }
 
@@ -302,6 +304,7 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener, UI_
     public void onError(Exception e) {
         e.printStackTrace();
     }
+
     @Override
     public void fixFont(JComponent c)
     {
