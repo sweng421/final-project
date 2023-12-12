@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -22,11 +21,10 @@ public class LoginFrame extends StatefulFrame implements ActionListener {
     private JButton loginBtn = new JButton("Connect");
 
     private static final int INSET_SIZE = 3;
-    private static final float FONT_SIZE = 17.0f;
     private Insets insets = new Insets(INSET_SIZE, INSET_SIZE, INSET_SIZE, INSET_SIZE);
 
     public LoginFrame() {
-        super();
+        super("Connect to server");
         state = StatefulFrame.SIGNED_OUT;
         initializeComponents();
     }
@@ -79,19 +77,16 @@ public class LoginFrame extends StatefulFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    private void fixFont(JComponent c) {
-        c.setFont(c.getFont().deriveFont(FONT_SIZE));
-    }
-
     @Override
     public StatefulFrame trySwitchState() {
         try {
             ChatroomConnection conn = new ConnectionBuilder()
                 .setServer(serverField.getText())
                 .setUsername(usernameField.getText())
+                .setPromptParent(this)
                 .connect()
                 .get(); // todo make async?
-            ChatroomFrame f = new ChatroomFrame(this, conn, usernameField.getName());
+            ChatroomFrame f = new ChatroomFrame(this, conn);
             setVisible(false);
             f.setVisible(true);
         } catch (Exception ex) {

@@ -19,14 +19,13 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class ChatroomFrame extends StatefulFrame implements MessageListener, UI_Interface,
+public class ChatroomFrame extends StatefulFrame implements MessageListener,
         ActionListener
 {
     int changeEventHandler = 0;    //Check this value before playing incoming alert beep to ensure
     //change events were not made locally
     private ChatroomConnection connection;
     private LoginFrame backFrame;
-    String userName;    //Used to refer sender to the user in populated message view
     private JTextArea msgInputField = new JTextArea();
     private JTextArea pluginType = new JTextArea();
     private JTextArea populatedMessages = new JTextArea(); //Message view
@@ -39,24 +38,17 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener, UI_
     JCheckBox alertListener = new JCheckBox();
     private static final float FONT_SIZE = 17.0f;
 
-    public ChatroomFrame(LoginFrame back, ChatroomConnection conn, String userName) {
-        super();
+    public ChatroomFrame(LoginFrame back, ChatroomConnection conn) {
+        super("Chatroom at " + conn.getHost());
         state = LOGGED_IN;
         backFrame = back;
         connection = conn;
         connection.addListener(this);
-        this.userName = userName;
         initializeComponents();
     }
 
     private void initializeComponents() {
         connection.sendMessage("Success!");
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                trySwitchState();
-            }
-        });
 
         this.setVisible(true);
         this.setSize(new Dimension(600, 600));
@@ -231,11 +223,11 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener, UI_
                 String msg = msgInputField.getText();
 
                 if(populatedMessages.getText().equals(""))
-                    populatedMessages.setText(userName + ":\n" + msg);
+                    populatedMessages.setText(connection.getUsername() + ":\n" + msg);
                 else
                 {
                     populatedMessages.setText(populatedMessages.getText() +
-                            "\n" + userName + ":\n" + msg);
+                            "\n" + connection.getUsername() + ":\n" + msg);
                 }
                 msgInputField.setText("");
                 changeEventHandler = 0;
@@ -260,12 +252,12 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener, UI_
                     {
                         if(populatedMessages.getText().equals(""))
                         {
-                            populatedMessages.setText(userName + ":\n" + msg);
+                            populatedMessages.setText(connection.getUsername() + ":\n" + msg);
                         }
                         else
                         {
                             populatedMessages.setText(populatedMessages.getText() +
-                                    "\n" + userName + ":\n" + msg);
+                                    "\n" + connection.getUsername() + ":\n" + msg);
                         }
                     }
                     msgInputField.setText("");

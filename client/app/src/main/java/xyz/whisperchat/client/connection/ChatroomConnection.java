@@ -20,13 +20,15 @@ public class ChatroomConnection extends WebSocketClient {
     private final ObjectWriter jsonWriter;
     private Set<MessageListener> listeners;
     private final ChatroomSettings settings;
+    private final String host;
 
     private ConnectionListener loginEvent = null;
     private String username = null;
     private char[] password = null;
 
-    public ChatroomConnection(URI wsUri, ChatroomSettings s) {
+    public ChatroomConnection(String server, URI wsUri, ChatroomSettings s) {
         super(wsUri);
+        host = server;
         listeners = new HashSet<>();
         settings = s;
         ObjectMapper mapper = new ObjectMapper();
@@ -40,6 +42,14 @@ public class ChatroomConnection extends WebSocketClient {
 
     public void removeListener(MessageListener l) {
         listeners.remove(l);
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getHost() {
+        return host;
     }
 
     private void broadcastError(Exception e) {

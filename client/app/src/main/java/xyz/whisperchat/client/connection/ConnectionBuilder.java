@@ -7,6 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 
+import java.awt.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -19,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 public class ConnectionBuilder {
     private ChatroomSettings settings = null;
     private String host = null, username = null;
+    private Component parent = null;
 
     public ConnectionBuilder setServer(String serverHost) throws IOException, URISyntaxException {
         HttpURLConnection httpConn = null;
@@ -45,6 +47,11 @@ public class ConnectionBuilder {
         return this;
     }
 
+    public ConnectionBuilder setPromptParent(Component p) {
+        parent = p;
+        return this;
+    }
+
     private char[] promptPassword() {
         JPasswordField pwdInput = new JPasswordField();
         final JComponent[] dialogItems = new JComponent[] {
@@ -52,7 +59,7 @@ public class ConnectionBuilder {
             pwdInput,
         };
         int result = JOptionPane.showConfirmDialog(
-            null, dialogItems, "Password required",
+            parent, dialogItems, "Password required",
             JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
             try {
@@ -67,7 +74,7 @@ public class ConnectionBuilder {
     public CompletableFuture<ChatroomConnection> connect() throws URISyntaxException, InterruptedException {
         URI wsUri = new URI("wss", host,
             settings.getChatPath(), null, null);
-        final ChatroomConnection connection = new ChatroomConnection(wsUri, settings);
+        final ChatroomConnection connection = new ChatroomConnection(host, wsUri, settings);
         final CompletableFuture<ChatroomConnection> f = new CompletableFuture<>();
 
         ConnectionListener listener = new ConnectionListener() {
