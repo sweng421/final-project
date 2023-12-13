@@ -204,6 +204,15 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
 
         msgInputField.setFocusable(true);
 
+        addWindowStateListener(new WindowStateListener()
+        {
+            @Override
+            public void windowStateChanged(WindowEvent e)
+            {
+                setMinimumSize(getPreferredSize());
+            }
+        });
+
         add(panel);
         setLocationRelativeTo(null);
 
