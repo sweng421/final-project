@@ -45,8 +45,6 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         initializeComponents();
     }
 
-    private void initializeComponents()
-    {
     // Runs a plugin action in a seperate thread
     private void runPluginAction(Runnable task) {
         if (pluginExecutor == null) {
@@ -170,75 +168,6 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         });
 
         backButton.addActionListener(this);
-        loadPlugin.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                String pluginName;
-                File plugin;
-
-                JFileChooser jFileChooser = new JFileChooser();
-
-                jFileChooser.setFileFilter(new FileNameExtensionFilter("JAR Files", "jar"));
-                int returnVal = jFileChooser.showDialog(loadPlugin, "Ok");
-
-                if(returnVal == 0)
-                {
-                    plugin = jFileChooser.getSelectedFile();
-                    try
-                    {
-                        URL jarUrl = new URL("file://" + plugin.getPath());
-                        URLClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl});
-                        ServiceLoader<Plugin> serviceLoader = ServiceLoader.load(Plugin.class, classLoader);
-
-                        for (Plugin p : serviceLoader) {
-                            p.start();
-                        }
-                        // Close the class loader
-                        classLoader.close();
-                    }
-                    catch (IOException ex)
-                    {
-                        throw new RuntimeException(ex);
-                    }
-
-                    //Display the plugin loaded
-                    pluginName = plugin.getName();
-                    pluginType.setLineWrap(true);
-                    pluginType.setText("Plugin type:\n" + pluginName);
-                    pluginType.setEnabled(false);
-                    pluginType.setVisible(true);
-
-                    //Display the anonymizer button and text area
-                    scrollPane2.setVisible(true);
-                    anonMsgInput.setVisible(true);
-                    anon.setVisible(true);
-                    anon.addActionListener(new ActionListener()
-                    {
-                        @Override
-                        public void actionPerformed(ActionEvent e)
-                        {   /*****
-                         To Do
-                         *****/
-                        }
-                    });
-                }
-            }
-        });
-
-        sendMsg.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String msg = msgInputField.getText();
-                if(!msg.equals("") && !msg.equals("\n") && !msg.equals(" "))
-                {
-                    connection.sendMessage(msg);
-                }
-                msgInputField.setText("");
-                panel.revalidate();
-            }
-        });
 
         msgInputField.setFocusable(true);
         msgInputField.addKeyListener(new KeyAdapter()
@@ -260,7 +189,6 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
                     panel.revalidate();
                 }
             }
-
             @Override
             public void keyPressed(KeyEvent e) {}
         });
@@ -302,24 +230,6 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         this.dispose();
         return backFrame;
     }
-
-    @Override
-    public void onMessage(PostMessage msg) {
-        messages.validate();
-        this.revalidate();
-    }
-
-    @Override
-    public void onError(Exception e) {
-        e.printStackTrace();
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e)
-    {
-        if (e.getSource().equals(backButton)) {
-            trySwitchState();
-
     private void sendAction() {
         String msg = msgInputField.getText().trim();
         if (msg.length() > 0 && msg.length() <= connection.getSettings().getMaxMsgLen()) {
@@ -327,7 +237,6 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
             msgInputField.setText("");
         }
     }
-
     private void showErrorDialog(String msg) {
         JOptionPane.showMessageDialog(this, msg, "Chatroom error", JOptionPane.ERROR_MESSAGE);
     }
@@ -368,7 +277,6 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
             }
         }
     }
-
     private void killPlugin() {
         if (plugin != null) {
             try {
