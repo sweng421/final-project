@@ -96,8 +96,10 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
 
     private void initializeComponents() {
         this.setVisible(true);
-        this.setSize(new Dimension(600, 600));
+        this.setSize(new Dimension(700, 700));
+        this.setPreferredSize(getSize());
         this.setMinimumSize(this.getSize());
+        System.out.println("Frame min size: " + this.getMinimumSize());
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
@@ -206,10 +208,9 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         setLocationRelativeTo(null);
 
         panel.setPreferredSize(getSize());
-        panel.setMinimumSize(getMinimumSize());
         panel.setMaximumSize(getMaximumSize());
-        pack();
         panel.setMinimumSize(getSize());
+        pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 

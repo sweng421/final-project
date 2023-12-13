@@ -20,8 +20,7 @@ public class MessageView extends JScrollPane implements MessageListener {
     private void initializeComponents() {
         setViewportView(messagePanel);
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
-        messagePanel.setPreferredSize(getPreferredSize());
-        messagePanel.setMinimumSize(getMinimumSize());
+        setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER);
     }
 
     public Filter getFilter() {

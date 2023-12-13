@@ -5,6 +5,7 @@ import java.awt.event.ComponentListener;
 import java.text.SimpleDateFormat;
 
 import javax.swing.*;
+import javax.swing.text.GapContent;
 
 import xyz.whisperchat.client.connection.messages.server.PostMessage;
 
@@ -26,6 +27,7 @@ public class MessageElement extends JPanel {
         setLayout(layout);
         layout.setAutoCreateGaps(true);
         layout.setAutoCreateContainerGaps(true);
+        setMinimumSize(getPreferredSize());
 
         String postTime = dateFmt.format(message.getTimestamp());
 
@@ -49,9 +51,11 @@ public class MessageElement extends JPanel {
                         .addGroup(layout.createSequentialGroup()
                                 .addComponent(authorLbl, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(dateLbl, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                .addComponent(dateLbl, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addGap(24))
                         .addGroup(layout.createSequentialGroup()
                                 .addComponent(msgArea, 0, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE)
+                                .addGap(15)
                         )
         );
 
