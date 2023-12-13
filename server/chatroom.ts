@@ -45,8 +45,8 @@ export default class Chatroom {
 
     tryClaimUsername(s: string): boolean {
         if (
-            s.length <= this.settings.maxUsrLen && /^\w+$/.test(s) &&
-            !this.usernames.has(s)
+            s.length > 0 && s.length <= this.settings.maxUsrLen &&
+            /^\w+$/.test(s) && !this.usernames.has(s)
         ) {
             this.usernames.add(s);
             return true;
