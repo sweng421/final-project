@@ -21,6 +21,9 @@ public class MessageView extends JScrollPane implements MessageListener {
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
     }
 
+    public Filter getFilter() {
+        return filter;
+    }
     public void setFilter(Filter f) {
         filter = f;
         if (filter != null) {

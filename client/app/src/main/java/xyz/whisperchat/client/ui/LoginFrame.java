@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 
 import xyz.whisperchat.client.connection.ChatroomConnection;
 import xyz.whisperchat.client.connection.ConnectionBuilder;
@@ -20,7 +21,7 @@ public class LoginFrame extends StatefulFrame implements ActionListener {
         usernameField = new JTextField();
     private JButton loginBtn = new JButton("Connect");
 
-    private static final int INSET_SIZE = 3;
+    private static final int INSET_SIZE = 7;
     private Insets insets = new Insets(INSET_SIZE, INSET_SIZE, INSET_SIZE, INSET_SIZE);
 
     public LoginFrame() {
@@ -44,11 +45,13 @@ public class LoginFrame extends StatefulFrame implements ActionListener {
         c.gridx = 0;
         c.gridy = 0;
         c.gridwidth = 1;
+        c.anchor = GridBagConstraints.EAST;
         pane.add(serverLbl, c);
 
         c.gridx = 1;
         c.gridy = 0;
         c.gridwidth = 2;
+        c.anchor = GridBagConstraints.WEST;
         pane.add(serverField, c);
 
         JLabel usernameLbl = new JLabel("Username: ");
@@ -56,20 +59,24 @@ public class LoginFrame extends StatefulFrame implements ActionListener {
         c.gridx = 0;
         c.gridy = 1;
         c.gridwidth = 1;
+        c.anchor = GridBagConstraints.EAST;
         pane.add(usernameLbl, c);
 
         c.gridx = 1;
         c.gridy = 1;
         c.gridwidth = 2;
+        c.anchor = GridBagConstraints.WEST;
         pane.add(usernameField, c);
 
         fixFont(loginBtn);
         c.gridx = 0;
         c.gridy = 2;
         c.gridwidth = 3;
+        c.anchor = GridBagConstraints.CENTER;
         pane.add(loginBtn, c);
         loginBtn.addActionListener(this);
 
+        pane.setBorder(new EmptyBorder(insets));
         add(pane);
         setLocationRelativeTo(null);
         pack();

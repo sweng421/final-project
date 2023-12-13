@@ -10,6 +10,7 @@ import xyz.whisperchat.client.connection.ChatroomConnection;
 import xyz.whisperchat.client.plugin.ChatPluginLoader;
 import xyz.whisperchat.client.plugin.StylometricAnonymizer;
 import xyz.whisperchat.client.plugin.UtilImpl;
+import xyz.whisperchat.client.ui.filter.Filter;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -29,6 +30,7 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         backButton = new JButton("Logout"),
         loadPlugin = new JButton("Load Plugin"),
         filter = new JButton("Filter"),
+        clearFilter = new JButton("Clear Filter"),
         anon = new JButton("Anonymize");
     private JCheckBox alertListener = new JCheckBox();
     private StylometricAnonymizer plugin = null;
@@ -118,6 +120,7 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
                                 .addComponent(loadPlugin)
                                 .addComponent(pluginType, 130, 130, 130)
                                 .addComponent(filter)
+                                .addComponent(clearFilter)
                                 .addComponent(sendMsg)
                                 .addComponent(anon))
         );
@@ -131,7 +134,8 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
                                         .addComponent(backButton)
                                         .addComponent(loadPlugin)
                                         .addComponent(pluginType, 60, 60, 60)
-                                        .addComponent(filter)))
+                                        .addComponent(filter)
+                                        .addComponent(clearFilter)))
                         .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(anonPane, 60, 60, 60)
                                 .addComponent(anon))
@@ -168,9 +172,12 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         loadPlugin.addActionListener(this);
         sendMsg.addActionListener(this);
         anon.addActionListener(this);
+        filter.addActionListener(this);
+        clearFilter.addActionListener(this);
+        clearFilter.setEnabled(false);
 
         msgInputField.setFocusable(true);
-        
+    
         add(panel);
         pack();
         setLocationRelativeTo(null);
@@ -212,7 +219,7 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         JFileChooser ofd = new JFileChooser();
         ofd.setFileFilter(new FileNameExtensionFilter("JAR Files", "jar"));
 
-        if(ofd.showDialog(loadPlugin, "Load plugin") == JFileChooser.APPROVE_OPTION) {
+        if(ofd.showDialog(this, "Load plugin") == JFileChooser.APPROVE_OPTION) {
             // Get file dialog data
             File pluginFile = ofd.getSelectedFile();
             final String fileName = pluginFile.getName();
@@ -277,7 +284,17 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
     }
 
     private void filterAction() {
-        // @TODO
+        FilterUI fd = new FilterUI(this);
+        Filter filter = fd.newFilter(messages.getFilter());
+        if (filter != null) {
+            messages.setFilter(filter);
+            clearFilter.setEnabled(true);
+        }
+    }
+
+    private void clearFilterAction() {
+        messages.clearFilter();
+        clearFilter.setEnabled(false);
     }
 
     private void anonAction() {
@@ -309,6 +326,8 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
             filterAction();
         } else if (e.getSource().equals(anon)) {
              anonAction();
+        } else if (e.getSource().equals(clearFilter)) {
+            clearFilterAction();
         }
     }
 }
