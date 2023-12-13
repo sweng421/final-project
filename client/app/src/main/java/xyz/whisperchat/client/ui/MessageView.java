@@ -1,6 +1,7 @@
 package xyz.whisperchat.client.ui;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.*;
 
 import xyz.whisperchat.client.connection.MessageListener;
@@ -19,6 +20,8 @@ public class MessageView extends JScrollPane implements MessageListener {
     private void initializeComponents() {
         setViewportView(messagePanel);
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
+        messagePanel.setPreferredSize(getPreferredSize());
+        messagePanel.setMinimumSize(getMinimumSize());
     }
 
     public void setFilter(Filter f) {
@@ -38,7 +41,8 @@ public class MessageView extends JScrollPane implements MessageListener {
     public void onMessage(PostMessage msg) {
         MessageElement msgEl = new MessageElement(msg);
         msgEl.setVisible(filter == null || filter.valid(msg));
-        messagePanel.add(msgEl);
+        messagePanel.add(msgEl, 0);
+        messagePanel.revalidate();
         elements.add(msgEl);
     }
 

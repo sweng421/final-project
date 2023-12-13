@@ -47,10 +47,11 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener,
     }
 
     private void initializeComponents() {
-        connection.sendMessage("Success!");
+        //connection.sendMessage("Success!");
 
         this.setVisible(true);
         this.setSize(new Dimension(600, 600));
+        this.setMinimumSize(this.getSize());
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
@@ -98,7 +99,6 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener,
                                 .addComponent(sendMsg))
         );
 
-        sendMsg.setAlignmentX(backButton.getAlignmentX());
         scrollPane2.setVisible(false);
         anon.setVisible(false);
         anonMsgInput.setVisible(false);
@@ -214,18 +214,21 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener,
         sendMsg.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println(msgInputField.getText());
-                connection.sendMessage(msgInputField.getText());
+                String msg = msgInputField.getText();
+                if(!msg.equals("") && !msg.equals("\n") && !msg.equals(" "))
+                {
+                    connection.sendMessage(msg);
+                }
+                msgInputField.setText("");
+                panel.revalidate();
             }
         });
 
         msgInputField.setFocusable(true);
-        /*msgInputField.addKeyListener(new KeyAdapter()
+        msgInputField.addKeyListener(new KeyAdapter()
         {
             @Override
-            public void keyTyped(KeyEvent e)
-            {
-            }
+            public void keyTyped(KeyEvent e) {}
             @Override
             public void keyReleased(KeyEvent e)
             {
@@ -236,31 +239,23 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener,
 
                     if(!msg.equals("") && !msg.equals("\n") && !msg.equals(" "))
                     {
-                        if(populatedMessages.getText().equals(""))
-                        {
-                            populatedMessages.setText(connection.getUsername() + ":\n" + msg);
-                        }
-                        else
-                        {
-                            populatedMessages.setText(populatedMessages.getText() +
-                                    "\n" + connection.getUsername() + ":\n" + msg);
-                        }
+                        connection.sendMessage(msg);
                     }
                     msgInputField.setText("");
+                    panel.revalidate();
                 }
                 changeEventHandler = 0;
             }
 
             @Override
-            public void keyPressed(KeyEvent e)
-            {
-            }
-        });*/
+            public void keyPressed(KeyEvent e) {}
+        });
         add(panel);
-        pack();
         setLocationRelativeTo(null);
+        panel.setPreferredSize(getSize());
         panel.setMinimumSize(getMinimumSize());
         panel.setMaximumSize(getMaximumSize());
+        pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
@@ -275,7 +270,8 @@ public class ChatroomFrame extends StatefulFrame implements MessageListener,
 
     @Override
     public void onMessage(PostMessage msg) {
-        System.out.println(msg);
+        messages.validate();
+        this.revalidate();
     }
 
     @Override

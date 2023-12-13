@@ -1,9 +1,8 @@
 package xyz.whisperchat.client.ui;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.text.SimpleDateFormat;
-import org.apache.commons.text.StringEscapeUtils;
 
 import javax.swing.*;
 
@@ -12,7 +11,7 @@ import xyz.whisperchat.client.connection.messages.server.PostMessage;
 public class MessageElement extends JPanel {
     public final PostMessage message;
     private final static SimpleDateFormat dateFmt = 
-        new SimpleDateFormat("yyyyy-mm-dd hh:mm:ss"); 
+        new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
     public MessageElement(PostMessage m) {
         message = m;
         initializeComponents();
@@ -22,36 +21,67 @@ public class MessageElement extends JPanel {
         return message;
     }
 
-    private void initializeComponents() {    
-        setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
+    private void initializeComponents() {
+        GroupLayout layout = new GroupLayout(this);
+        setLayout(layout);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
 
-        String htmlMsg = "<html>" + StringEscapeUtils.escapeHtml4(message.getMessage())
-            .replaceAll("\r\n", "<br />")
-            .replaceAll("\n", "<br />") + "</html>";
         String postTime = dateFmt.format(message.getTimestamp());
-        
+
+        //Msg view variable definitions
         JLabel authorLbl = new JLabel(message.getAuthor() + " says: "),
-            dateLbl = new JLabel(postTime),
-            postLbl = new JLabel(htmlMsg);
-        
-        c.gridx = 0;
-        c.gridy = 0;
-        c.anchor = GridBagConstraints.LINE_START;
-        c.weightx = 1.0f;
-        add(authorLbl, c);
+            dateLbl = new JLabel(postTime);
+        JTextArea msgArea = new JTextArea(message.getMessage());
 
-        c.gridx = 1;
-        c.gridy = 0;
-        c.anchor = GridBagConstraints.LINE_END;
-        c.weightx = 0.0f;
-        add(dateLbl, c);
+        //Text properties
+        msgArea.setLineWrap(true);
+        msgArea.setWrapStyleWord(true);
+        msgArea.setEnabled(false);
+        msgArea.setBackground(this.getBackground());
 
-        c.gridx = 0;
-        c.gridy = 1;
-        c.gridwidth = 2;
-        c.weightx = 1.0f;
-        c.anchor = GridBagConstraints.LINE_START;
-        add(postLbl, c);
+        fixFont(authorLbl);
+        fixFont(dateLbl);
+        fixFont(msgArea);
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(authorLbl, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(dateLbl, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(msgArea, 0, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE)
+                        )
+        );
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(authorLbl, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(dateLbl, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(msgArea, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+        );
+        layout.linkSize(authorLbl, dateLbl);
+        this.addComponentListener(new ComponentListener()
+        {
+            @Override
+            public void componentResized(ComponentEvent e)
+            {
+                setPreferredSize(getPreferredSize());
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {}
+
+            @Override
+            public void componentShown(ComponentEvent e) {}
+
+            @Override
+            public void componentHidden(ComponentEvent e) {}
+        });
+    }
+    protected void fixFont(JComponent c) {
+        c.setFont(c.getFont().deriveFont(16.0f));
     }
 }
