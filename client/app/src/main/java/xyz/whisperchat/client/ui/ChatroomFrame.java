@@ -19,7 +19,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class ChatroomFrame extends StatefulFrame implements ActionListener {
+public class ChatroomFrame extends ApplicationFrame implements ActionListener {
     private final ChatroomConnection connection;
     private LoginFrame backFrame;
     private JTextArea msgInputField = new JTextArea(),
@@ -41,7 +41,6 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
 
     public ChatroomFrame(LoginFrame back, ChatroomConnection conn) {
         super("Chatroom at " + conn.getHost());
-        state = LOGGED_IN;
         backFrame = back;
         connection = conn;
         connection.addListener(messages);
@@ -141,23 +140,13 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         backButton.addActionListener(this);
 
         msgInputField.setFocusable(true);
-        msgInputField.addKeyListener(new KeyAdapter()
-        {
+        msgInputField.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyTyped(KeyEvent e) {}
+            public void keyTyped(KeyEvent e) { }
             @Override
-            public void keyReleased(KeyEvent e)
-            {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER)
-                {
-                    String msg = msgInputField.getText();
-
-                    if(!msg.equals("") && !msg.equals("\n") && !msg.equals(" "))
-                    {
-                        connection.sendMessage(msg);
-                    }
-                    msgInputField.setText("");
-                    panel.revalidate();
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    sendAction();
                 }
             }
             @Override
@@ -173,11 +162,9 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
 
         msgInputField.setFocusable(true);
 
-        addWindowStateListener(new WindowStateListener()
-        {
+        addWindowStateListener(new WindowStateListener() {
             @Override
-            public void windowStateChanged(WindowEvent e)
-            {
+            public void windowStateChanged(WindowEvent e) {
                 setMinimumSize(getPreferredSize());
             }
         });
@@ -203,19 +190,21 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
     }
 
     @Override
-    public StatefulFrame trySwitchState() {
+    public void trySwitchState() {
         setVisible(false);
         backFrame.setVisible(true);
         this.dispose();
-        return backFrame;
     }
+
     private void sendAction() {
         String msg = msgInputField.getText().trim();
         if (msg.length() > 0 && msg.length() <= connection.getSettings().getMaxMsgLen()) {
             connection.sendMessage(msg);
             msgInputField.setText("");
+            revalidate();
         }
     }
+
     private void showErrorDialog(String msg) {
         JOptionPane.showMessageDialog(this, msg, "Chatroom error", JOptionPane.ERROR_MESSAGE);
     }
@@ -256,6 +245,7 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
             }
         }
     }
+
     private void killPlugin() {
         if (plugin != null) {
             try {

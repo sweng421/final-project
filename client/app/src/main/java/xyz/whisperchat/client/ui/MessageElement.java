@@ -5,7 +5,6 @@ import java.awt.event.ComponentListener;
 import java.text.SimpleDateFormat;
 
 import javax.swing.*;
-import javax.swing.text.GapContent;
 
 import xyz.whisperchat.client.connection.messages.server.PostMessage;
 

@@ -3,7 +3,7 @@ package xyz.whisperchat.client.plugin;
 import java.io.File;
 
 public class NoPluginFound extends Exception {
-    private File file; 
+    private File file;
     public NoPluginFound(File f) {
         super("No plugin found in file " + f.getName());
         f = file;
