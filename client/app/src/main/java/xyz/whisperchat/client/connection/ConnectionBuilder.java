@@ -24,7 +24,8 @@ public class ConnectionBuilder {
 
     public ConnectionBuilder setServer(String serverHost) throws IOException, URISyntaxException {
         HttpURLConnection httpConn = null;
-        URL settingsEndpoint = new URL("https", serverHost, "/settings");
+        URI endpointUri = new URI("https", serverHost, "/settings", null, null);
+        URL settingsEndpoint = endpointUri.toURL();
     
         try {
             httpConn = (HttpURLConnection)settingsEndpoint.openConnection();

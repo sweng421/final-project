@@ -24,6 +24,9 @@ public class MessageView extends JScrollPane implements MessageListener {
         messagePanel.setMinimumSize(getMinimumSize());
     }
 
+    public Filter getFilter() {
+        return filter;
+    }
     public void setFilter(Filter f) {
         filter = f;
         if (filter != null) {

@@ -2,19 +2,23 @@ package xyz.whisperchat.client.plugin;
 
 import org.pf4j.DefaultPluginManager;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
 public class ChatPluginLoader extends DefaultPluginManager {
-    public StylometricAnonymizer loadChatPlugin(String plugin) {
+    public StylometricAnonymizer loadChatPlugin(File pluginFile) throws NoPluginFound {
         System.out.println(getPluginsRoot());
-        Path path = getPluginsRoot().resolve(plugin);
+        Path path = getPluginsRoot().resolve(pluginFile.getAbsolutePath());
         System.out.println(path);
         
         String pluginId = this.loadPlugin(path);
         this.startPlugin(pluginId);
 
         List<StylometricAnonymizer> exts = getExtensions(StylometricAnonymizer.class, pluginId);
-        return exts.isEmpty() ? null : exts.get(0);
+        if (exts.isEmpty()) {
+            throw new NoPluginFound(pluginFile);
+        }
+        return exts.get(0);
     }
 }

@@ -86,15 +86,19 @@ export default class Chatter {
     }
 
     private onPost(msg: PostMessage) {
+        if (!msg.message) {
+            return;
+        }
+        const message = (msg.message + "").trim();
         if (
             this.nickname && this.signedIn &&
-            msg.message.length <= this.chatroom.settings.maxMsgLen
+            message.length > 0 &&
+            message.length <= this.chatroom.settings.maxMsgLen
         ) {
             this.chatroom.broadcast({
                 kind: "message",
                 author: this.nickname,
-                message: (msg.message + "").trim(),
-                timestamp: Date.now(),
+                message, timestamp: Date.now(),
             });
         } else {
             this.sendError("Couldn't send message");

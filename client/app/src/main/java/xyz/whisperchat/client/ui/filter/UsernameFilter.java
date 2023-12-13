@@ -2,19 +2,16 @@ package xyz.whisperchat.client.ui.filter;
 
 import xyz.whisperchat.client.connection.messages.server.PostMessage;
 
-public class UsernameFilter extends AbstractFilter {
-    private String username;
-    public UsernameFilter(String u) {
-        super();
-        username = u;
+public class UsernameFilter extends StringFilter {
+    public UsernameFilter(String username) {
+        super(username);
     }
-    public UsernameFilter(String u, Filter f) {
-        super(f);
-        username = u;
+    public UsernameFilter(Filter f, String username) {
+        super(f, username);
     }
     
     @Override
     public boolean applies(PostMessage p) {
-        return p.getAuthor().equalsIgnoreCase(username);
+        return p.getAuthor().equalsIgnoreCase(getContent());
     }
 }
