@@ -1,9 +1,6 @@
 package xyz.whisperchat.client.ui;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
 import java.util.*;
 
 import xyz.whisperchat.client.connection.MessageListener;
