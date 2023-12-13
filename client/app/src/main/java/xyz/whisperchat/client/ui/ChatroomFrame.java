@@ -15,8 +15,6 @@ import xyz.whisperchat.client.ui.state.chatroom.ChatroomState;
 import xyz.whisperchat.client.ui.state.chatroom.NoPluginState;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class ChatroomFrame extends StatefulFrame implements ActionListener {
@@ -38,6 +36,8 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
     private StylometricAnonymizer plugin = null;
     private ExecutorService pluginExecutor = null;
     private ChatroomState pluginState = null;
+    private JPanel panel = new JPanel();
+    private AlertsAdapter alertAdapter;
 
     public ChatroomFrame(LoginFrame back, ChatroomConnection conn) {
         super("Chatroom at " + conn.getHost());
@@ -65,10 +65,8 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         this.setSize(new Dimension(700, 700));
         this.setPreferredSize(getSize());
         this.setMinimumSize(this.getSize());
-        System.out.println("Frame min size: " + this.getMinimumSize());
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        JPanel panel = new JPanel();
         alertListener.setToolTipText("Subscribe to incoming message alerts");
 
         GroupLayout panelLayout = new GroupLayout(panel);
@@ -127,16 +125,7 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         fixFont(anonMsgInput);
         fixFont(msgInputField);
 
-        alertListener.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                if (alertListener.isSelected()) {
-                    alertListener.setToolTipText("Unsubscribe from incoming message alerts");
-                } else {
-                    alertListener.setToolTipText("Subscribe to incoming message alerts");
-                }
-            }
-        });
+        alertListener.addActionListener(this);
 
         backButton.addActionListener(this);
 
@@ -308,6 +297,29 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
             });
         }
     }
+    private void messageAlertAction()
+    {
+        if(alertListener.isSelected()){
+            alertListener.setToolTipText("Unsubscribe from incoming message alerts");
+
+            if(alertAdapter == null) {
+                alertAdapter = new AlertsAdapter(connection.getUsername(), messages);
+                alertAdapter.setAlertListener(alertListener);
+                alertAdapter.start();
+            }
+            else if(alertAdapter.isAlive()){
+                try {
+                    alertAdapter.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else{
+            alertListener.setToolTipText("Subscribe to incoming message alerts");
+            alertAdapter = null;
+        }
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -324,5 +336,9 @@ public class ChatroomFrame extends StatefulFrame implements ActionListener {
         } else if (e.getSource().equals(clearFilter)) {
             clearFilterAction();
         }
+        else if (e.getSource().equals(alertListener)) {
+            messageAlertAction();
+        }
+
     }
 }
