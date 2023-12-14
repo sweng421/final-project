@@ -1,3 +1,11 @@
+/**
+ * PATTERN: State
+ * 
+ * Used to manage complex UI states
+ * Hides and shows buttons depending on
+ * current state and transition
+*/
+
 package xyz.whisperchat.client.ui.state.login;
 
 import javax.swing.JButton;

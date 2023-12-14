@@ -1,3 +1,11 @@
+/**
+ * PATTERN: Builder
+ * 
+ * Builder is used to gather information from the
+ * server and user. This information (password,
+ * websocket path) is used to create the connection
+*/
+
 package xyz.whisperchat.client.connection;
 
 import java.net.URL;

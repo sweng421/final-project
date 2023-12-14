@@ -1,3 +1,11 @@
+/**
+ * PATTERN: Dynamic Loading
+ * 
+ * Dynamic loading is used to load plugins from
+ * JAR files. Classes that implement the StylometricAnonymizer
+ * are extracted and used to anonymize the user input
+*/
+
 package xyz.whisperchat.client.plugin;
 
 import org.pf4j.DefaultPluginManager;

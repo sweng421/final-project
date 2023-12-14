@@ -1,3 +1,12 @@
+/**
+ * PATTERN: Futures/Promises
+ * 
+ * JavaScript Promise objects are used to avoid
+ * blocking the event loop. This allows the server
+ * to process incoming requests while making sure
+ * others resolve 
+*/
+
 // @deno-types="ws-types"
 import { WebSocket, WebSocketServer } from "ws";
 import { Server } from "node:https";
