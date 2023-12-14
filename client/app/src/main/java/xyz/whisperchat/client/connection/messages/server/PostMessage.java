@@ -33,4 +33,13 @@ public class PostMessage extends ServerMessage {
         return String.format("Post(%s, \"%s\", %s)", 
             author, message, timestamp);
     }
+
+    public boolean mentions(String username) {
+        String a = "@" + username;
+        return !username.equals(author) &&
+            (message.endsWith(a) ||
+                message.contains(a + " ") ||
+                message.contains(a + "\n") ||
+                message.contains(a + "\t"));
+    }
 }

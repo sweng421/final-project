@@ -7,6 +7,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import xyz.whisperchat.client.connection.ChatroomConnection;
+import xyz.whisperchat.client.connection.MessageListener;
+import xyz.whisperchat.client.connection.messages.server.PostMessage;
 import xyz.whisperchat.client.plugin.ChatPluginLoader;
 import xyz.whisperchat.client.plugin.StylometricAnonymizer;
 import xyz.whisperchat.client.plugin.UtilImpl;
@@ -17,7 +19,7 @@ import xyz.whisperchat.client.ui.state.chatroom.NoPluginState;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class ChatroomFrame extends ApplicationFrame implements ActionListener {
+public class ChatroomFrame extends ApplicationFrame implements ActionListener, MessageListener {
     private final ChatroomConnection connection;
     private LoginFrame backFrame;
     private JTextArea msgInputField = new JTextArea(),
@@ -37,7 +39,6 @@ public class ChatroomFrame extends ApplicationFrame implements ActionListener {
     private ExecutorService pluginExecutor = null;
     private ChatroomState pluginState = null;
     private JPanel panel = new JPanel();
-    private AlertsAdapter alertAdapter;
 
     public ChatroomFrame(LoginFrame back, ChatroomConnection conn) {
         super("Chatroom at " + conn.getHost());
@@ -125,7 +126,6 @@ public class ChatroomFrame extends ApplicationFrame implements ActionListener {
         fixFont(msgInputField);
 
         alertListener.addActionListener(this);
-
         backButton.addActionListener(this);
 
         msgInputField.setFocusable(true);
@@ -287,27 +287,14 @@ public class ChatroomFrame extends ApplicationFrame implements ActionListener {
             });
         }
     }
-    private void messageAlertAction()
-    {
-        if(alertListener.isSelected()){
-            alertListener.setToolTipText("Unsubscribe from incoming message alerts");
 
-            if(alertAdapter == null) {
-                alertAdapter = new AlertsAdapter(connection.getUsername(), messages);
-                alertAdapter.setAlertListener(alertListener);
-                alertAdapter.start();
-            }
-            else if(alertAdapter.isAlive()){
-                try {
-                    alertAdapter.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        else{
+    private void messageAlertAction() {
+        if (alertListener.isSelected()) {
+            alertListener.setToolTipText("Unsubscribe from incoming message alerts");
+            connection.addListener(this);
+        } else {
             alertListener.setToolTipText("Subscribe to incoming message alerts");
-            alertAdapter = null;
+            connection.removeListener(this);
         }
     }
 
@@ -325,10 +312,18 @@ public class ChatroomFrame extends ApplicationFrame implements ActionListener {
              anonAction();
         } else if (e.getSource().equals(clearFilter)) {
             clearFilterAction();
-        }
-        else if (e.getSource().equals(alertListener)) {
+        } else if (e.getSource().equals(alertListener)) {
             messageAlertAction();
         }
-
     }
+
+    @Override
+    public void onMessage(PostMessage msg) {
+        if (msg.mentions(connection.getUsername())) {
+            Toolkit.getDefaultToolkit().beep();
+        }
+    }
+
+    @Override
+    public void onError(Exception e) {}
 }
