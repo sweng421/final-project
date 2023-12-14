@@ -129,18 +129,7 @@ public class ChatroomFrame extends ApplicationFrame implements ActionListener, M
         backButton.addActionListener(this);
 
         msgInputField.setFocusable(true);
-        msgInputField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) { }
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    sendAction();
-                }
-            }
-            @Override
-            public void keyPressed(KeyEvent e) {}
-        });
+        setupEnterKeystrokes();
 
         loadPlugin.addActionListener(this);
         sendMsg.addActionListener(this);
@@ -166,6 +155,32 @@ public class ChatroomFrame extends ApplicationFrame implements ActionListener, M
         panel.setMinimumSize(getSize());
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    private void setupEnterKeystrokes() {
+        String INSERT_NEWLINE = "ins-newline",
+            SEND_POST = "send-post";
+
+        InputMap imap = msgInputField.getInputMap();
+        imap.put(KeyStroke.getKeyStroke("shift ENTER"), INSERT_NEWLINE);
+        imap.put(KeyStroke.getKeyStroke("ENTER"), SEND_POST);
+
+        ActionMap amap = msgInputField.getActionMap();
+        amap.put(SEND_POST, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sendAction();
+            }
+        });
+        amap.put(INSERT_NEWLINE, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int caret = msgInputField.getCaretPosition();
+                String start = msgInputField.getText().substring(0, caret);
+                String end = msgInputField.getText().substring(caret);
+                msgInputField.setText(start + "\n" + end);
+            }
+        });
     }
 
     @Override
